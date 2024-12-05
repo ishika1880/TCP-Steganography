@@ -4,7 +4,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.nio.ByteBuffer;
+
+import static org.example.Utilities.Utility.bytesToHex;
 
 public class TCPServer {
     public static void main(String[] args) throws Exception {
@@ -12,26 +13,27 @@ public class TCPServer {
         try (ServerSocket serverSocket = new ServerSocket(port)) {
             System.out.println("Server is listening...");
 
+            // Accept client connections
             Socket clientSocket = serverSocket.accept();
             InputStream in = clientSocket.getInputStream();
-
-            //sending to myself
             OutputStream out = clientSocket.getOutputStream();
 
-            // Read the sequence number (simulate packet)
+            // Read the received packet from the client
             byte[] receivedPacket = new byte[1024];
             int bytesRead = in.read(receivedPacket);
 
             if (bytesRead > 0) {
-                int originalSequence = 1000; // Example initial sequence
-                String hiddenMessage = Receiver.decodeData(
-                        ByteBuffer.wrap(receivedPacket).getInt(), originalSequence
-                );
+                // Decode the hidden message from the received packet
+                String hiddenMessage = Receiver.decodeData(receivedPacket);
                 System.out.println("Hidden Message: " + hiddenMessage);
-                // Send the received packet back (echo the data)
+
+                // Send the received packet back to the client (echo)
                 out.write(receivedPacket);
                 System.out.println("Packet sent back to the client.");
+                System.out.println("Received packet (hex): " + bytesToHex(receivedPacket));
+
             }
         }
     }
 }
+
